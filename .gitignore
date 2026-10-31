@@ -1,0 +1,51 @@
+# Kredensial
+.env
+
+# Dependencies (bisa di-generate ulang)
+vendor/
+node_modules/
+
+# Laravel storage & cache
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/app/public/*
+bootstrap/cache/*.php
+!bootstrap/cache/.gitkeep
+
+# File & folder junk yang ditemukan
+speakverse.zip
+speakverse/
+error_log
+default.html
+default-welcome.html
+DATABASE\ TERBARU\ 2\ JULI/
+elect(*
+
+# Misc
+*.log
+.DS_Store
+Thumbs.db
+
+# Laporan: local secrets and database exports
+.env.*
+!.env.example
+*.sql
+*.sql.gz
+*.pem
+*.key
+*credentials*.json
+*.p12
+*.pfx
+
+# Laporan: local secrets and database exports
+.env.*
+!.env.example
+*.sql
+*.sql.gz
+*.pem
+*.key
+*credentials*.json
+*.p12
+*.pfx
