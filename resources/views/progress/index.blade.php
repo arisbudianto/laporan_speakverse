@@ -1618,6 +1618,9 @@
         }
     </style>
 
+    <div style="max-width:1200px;margin:16px auto 0;padding:0 16px;">
+        <a href="{{ route('progress.my') }}" style="display:inline-block;padding:10px 16px;border-radius:14px;background:#0f172a;color:#fff;font-weight:700;text-decoration:none;font-size:14px;">Kemajuan Saya: target &amp; langkah berikutnya →</a>
+    </div>
 
     @php
         $skillMeta = [

@@ -3342,6 +3342,7 @@
         })();
     </script>
 
+    @include('partials.consent-modal')
 </body>
 
 </html>

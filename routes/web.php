@@ -20,6 +20,15 @@ use App\Http\Controllers\MissionController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LearningContentController;
 use App\Http\Controllers\Admin\AnalyticsController;
+use App\Http\Controllers\Admin\SchoolResultsController;
+use App\Http\Controllers\Admin\LearningAnalyticsController;
+use App\Http\Controllers\Admin\LearningAnalyticsOutcomeController;
+use App\Http\Controllers\Admin\LearningAnalyticsBehaviorController;
+use App\Http\Controllers\Admin\LearningAnalyticsRiskController;
+use App\Http\Controllers\Admin\LearningAnalyticsResearchController;
+use App\Http\Controllers\Admin\LearningAnalyticsCohortController;
+use App\Http\Controllers\Staff\ClassAnalyticsController;
+use App\Http\Controllers\StudentProgressController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
@@ -510,6 +519,9 @@ Route::middleware([
         [ProgressController::class, 'index']
     )->name('progress');
 
+    Route::get('/my-progress', [StudentProgressController::class, 'show'])->name('progress.my');
+    Route::post('/my-progress/consent', [StudentProgressController::class, 'consent'])->name('progress.consent');
+
 
     /*
     |--------------------------------------------------------------------------
@@ -794,6 +806,59 @@ Route::middleware([
             [AnalyticsController::class, 'index']
         )->name('admin.analytics');
 
+        /*
+        |--------------------------------------------------------------------------
+        | Analisis hasil belajar semua sekolah (khusus admin)
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/school-results',
+            [SchoolResultsController::class, 'index']
+        )->name('admin.school-results');
+
+        Route::get(
+            '/school-results/export',
+            [SchoolResultsController::class, 'export']
+        )->name('admin.school-results.export');
+
+        /* Learning Analytics lanjutan (Fase 1: keterlibatan & konsistensi) */
+        Route::get(
+            '/learning-analytics/engagement',
+            [LearningAnalyticsController::class, 'engagement']
+        )->name('admin.la.engagement');
+
+        Route::get(
+            '/learning-analytics/engagement/export',
+            [LearningAnalyticsController::class, 'engagementExport']
+        )->name('admin.la.engagement.export');
+
+        Route::get('/learning-analytics/outcomes', [LearningAnalyticsOutcomeController::class, 'outcomes'])->name('admin.la.outcomes');
+        Route::get('/learning-analytics/items', [LearningAnalyticsOutcomeController::class, 'items'])->name('admin.la.items');
+        Route::get('/learning-analytics/items/export', [LearningAnalyticsOutcomeController::class, 'itemsExport'])->name('admin.la.items.export');
+        Route::get('/learning-analytics/mastery', [LearningAnalyticsBehaviorController::class, 'mastery'])->name('admin.la.mastery');
+        Route::get('/learning-analytics/srl', [LearningAnalyticsBehaviorController::class, 'srl'])->name('admin.la.srl');
+        Route::get('/learning-analytics/risk', [LearningAnalyticsRiskController::class, 'risk'])->name('admin.la.risk');
+        Route::post('/learning-analytics/risk/weights', [LearningAnalyticsRiskController::class, 'saveWeights'])->name('admin.la.risk.weights');
+        Route::get('/learning-analytics/interventions', [LearningAnalyticsRiskController::class, 'interventions'])->name('admin.la.interventions');
+        Route::get('/learning-analytics/research', [LearningAnalyticsResearchController::class, 'index'])->name('admin.la.research');
+        Route::post('/learning-analytics/research/group', [LearningAnalyticsResearchController::class, 'setGroup'])->name('admin.la.research.group');
+        Route::post('/learning-analytics/research/export', [LearningAnalyticsResearchController::class, 'export'])->name('admin.la.research.export');
+        Route::post('/learning-analytics/research/meta', [LearningAnalyticsResearchController::class, 'saveMeta'])->name('admin.la.research.meta');
+        Route::post('/learning-analytics/research/consent-batch', [LearningAnalyticsResearchController::class, 'consentBatch'])->name('admin.la.research.consent_batch');
+        Route::post('/learning-analytics/research/consent-batch/{batch}/revoke', [LearningAnalyticsResearchController::class, 'consentRevoke'])->name('admin.la.research.consent_revoke');
+        Route::get('/learning-analytics/research/codebook', [LearningAnalyticsResearchController::class, 'codebook'])->name('admin.la.research.codebook');
+        Route::get('/learning-analytics/cohort', [LearningAnalyticsCohortController::class, 'index'])->name('admin.la.cohort');
+        Route::post('/learning-analytics/cohort/scope', [LearningAnalyticsCohortController::class, 'scope'])->name('admin.la.cohort.scope');
+        Route::get('/learning-analytics/cohort/merge', [LearningAnalyticsCohortController::class, 'mergePreview'])->name('admin.la.cohort.merge');
+        Route::post('/learning-analytics/cohort/merge', [LearningAnalyticsCohortController::class, 'merge'])->name('admin.la.cohort.merge.do');
+        Route::post('/learning-analytics/cohort/merge/{id}/undo', [LearningAnalyticsCohortController::class, 'mergeUndo'])->name('admin.la.cohort.merge.undo');
+        Route::post('/learning-analytics/cohort', [LearningAnalyticsCohortController::class, 'mark'])->name('admin.la.cohort.mark');
+        Route::post('/learning-analytics/items/review', [LearningAnalyticsOutcomeController::class, 'reviewItem'])->name('admin.la.items.review');
+        Route::post('/learning-analytics/interventions/bulk', [LearningAnalyticsRiskController::class, 'bulkIntervention'])->name('admin.la.interventions.bulk');
+        Route::get('/learning-analytics/report', [\App\Http\Controllers\Admin\LearningAnalyticsReportController::class, 'show'])->name('admin.la.report');
+        Route::get('/learning-analytics/method', [LearningAnalyticsResearchController::class, 'methodology'])->name('admin.la.method');
+
         });
 
 
@@ -813,6 +878,8 @@ Route::middleware([
         Route::get('/classes/results', [ClassResultsController::class, 'show'])->name('staff.classes.results');
         Route::get('/classes/results/export', [ClassResultsController::class, 'export'])->name('staff.classes.results.export');
         Route::get('/classes/students/{student}/detail', [ClassResultsController::class, 'studentDetail'])->name('staff.classes.students.detail');
+        Route::get('/classes/analytics', [ClassAnalyticsController::class, 'show'])->name('staff.classes.analytics');
+        Route::post('/classes/analytics/interventions', [ClassAnalyticsController::class, 'storeIntervention'])->name('staff.classes.analytics.interventions');
 
         /*
         |--------------------------------------------------------------------------

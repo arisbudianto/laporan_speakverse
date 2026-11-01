@@ -69,6 +69,59 @@ XML);
         return response()->download($tmp, $filename)->deleteFileAfterSend(true);
     }
 
+    /**
+     * Beberapa lembar kerja dalam satu berkas.
+     * @param list<array{name:string,headers:list<string>,rows:list<list<string|int|float|null>>}> $sheets
+     */
+    public static function downloadSheets(string $filename, array $sheets)
+    {
+        $tmp = tempnam(sys_get_temp_dir(), 'xlsx');
+        $zip = new \ZipArchive();
+        $zip->open($tmp, \ZipArchive::OVERWRITE);
+        $types = '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>';
+        $rels = '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
+        $wb = '<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>';
+        foreach (array_values($sheets) as $i => $sh) {
+            $n = $i + 1;
+            $types .= '<Override PartName="/xl/worksheets/sheet' . $n . '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';
+            $rels .= '<Relationship Id="rId' . $n . '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' . $n . '.xml"/>';
+            $name = htmlspecialchars(mb_substr(preg_replace('/[\\\/\?\*\[\]:]/', ' ', $sh['name']), 0, 31), ENT_XML1 | ENT_QUOTES, 'UTF-8');
+            $wb .= '<sheet name="' . $name . '" sheetId="' . $n . '" r:id="rId' . $n . '"/>';
+            $x = '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+            foreach (array_merge([$sh['headers']], $sh['rows']) as $r => $row) {
+                $x .= '<row r="' . ($r + 1) . '">';
+                foreach ($row as $c => $value) {
+                    $cell = self::cellName($c + 1, $r + 1);
+                    $text = htmlspecialchars((string) ($value ?? ''), ENT_XML1 | ENT_QUOTES, 'UTF-8');
+                    $x .= (is_numeric($value) && $value !== '') ? '<c r="' . $cell . '"><v>' . $text . '</v></c>' : '<c r="' . $cell . '" t="inlineStr"><is><t>' . $text . '</t></is></c>';
+                }
+                $x .= '</row>';
+            }
+            $zip->addFromString('xl/worksheets/sheet' . $n . '.xml', $x . '</sheetData></worksheet>');
+        }
+        $zip->addFromString('[Content_Types].xml', $types . '</Types>');
+        $zip->addFromString('_rels/.rels', '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
+        $zip->addFromString('xl/_rels/workbook.xml.rels', $rels . '</Relationships>');
+        $zip->addFromString('xl/workbook.xml', $wb . '</sheets></workbook>');
+        $zip->close();
+
+        return response()->download($tmp, $filename)->deleteFileAfterSend(true);
+    }
+
+    /** CSV UTF-8 (dengan BOM agar Excel membaca benar), dialirkan. */
+    public static function csv(string $filename, array $headers, iterable $rows)
+    {
+        return response()->streamDownload(function () use ($headers, $rows) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, $headers);
+            foreach ($rows as $r) {
+                fputcsv($out, $r);
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
     private static function cellName(int $col, int $row): string
     {
         $name = '';
