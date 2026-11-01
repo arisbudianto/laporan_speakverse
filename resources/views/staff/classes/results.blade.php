@@ -9,10 +9,16 @@
                 {{ $class['school'] }} · {{ $class['major'] }} · {{ $class['grade'] }} {{ $class['parallel'] }}
             </p>
         </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <a href="{{ route('staff.classes.analytics', $class) }}"
+            style="display:inline-flex;align-items:center;background:#0f172a;color:#fff;font-weight:700;padding:12px 18px;border-radius:14px;text-decoration:none;">
+            Analitik Lanjutan
+        </a>
         <a href="{{ route('staff.classes.results.export', $class) }}"
             style="display:inline-flex;align-items:center;background:#d97706;color:#fff;font-weight:700;padding:12px 18px;border-radius:14px;text-decoration:none;">
             Export Excel
         </a>
+        </div>
     </div>
 
     <div class="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
