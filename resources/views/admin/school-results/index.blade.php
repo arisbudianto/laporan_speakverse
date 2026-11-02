@@ -38,6 +38,10 @@
                    class="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-bold hover:bg-slate-100 dark:border-white/10 dark:hover:bg-white/5">
                     Unduh per siswa (Excel)
                 </a>
+                <a href="{{ route('admin.school-results.import') }}"
+                   class="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-bold hover:bg-slate-100 dark:border-white/10 dark:hover:bg-white/5">
+                    Impor nilai pelengkap
+                </a>
             </div>
         </div>
 

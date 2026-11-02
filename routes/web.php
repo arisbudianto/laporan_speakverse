@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LearningContentController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\SchoolResultsController;
+use App\Http\Controllers\Admin\SchoolResultsImportController;
 use App\Http\Controllers\Admin\LearningAnalyticsController;
 use App\Http\Controllers\Admin\LearningAnalyticsOutcomeController;
 use App\Http\Controllers\Admin\LearningAnalyticsBehaviorController;
@@ -821,6 +822,23 @@ Route::middleware([
             '/school-results/export',
             [SchoolResultsController::class, 'export']
         )->name('admin.school-results.export');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Impor nilai pelengkap (hanya mengisi yang kosong, lihat
+        | SchoolResultsImportController untuk aturan keselamatan datanya)
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/school-results/import',
+            [SchoolResultsImportController::class, 'create']
+        )->name('admin.school-results.import');
+
+        Route::post(
+            '/school-results/import',
+            [SchoolResultsImportController::class, 'store']
+        )->name('admin.school-results.import.store');
 
         /* Learning Analytics lanjutan (Fase 1: keterlibatan & konsistensi) */
         Route::get(
