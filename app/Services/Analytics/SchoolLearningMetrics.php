@@ -23,6 +23,17 @@ class SchoolLearningMetrics
     public const NO_SCHOOL = '(Belum diisi)';
 
     /**
+     * Sekolah yang disembunyikan khusus dari tabel "Perbandingan antar
+     * sekolah" (mis. belum ada siswa aktif / di luar rollout saat ini).
+     * Tidak mempengaruhi dropdown pilih sekolah atau fitur lain — siswa
+     * di sekolah ini tetap terhitung penuh di cakupan "semua sekolah".
+     */
+    private const HIDDEN_FROM_COMPARISON = [
+        'SMK N 1 Banyudono (Boyolali)',
+        'SMK N 6 Surakarta',
+    ];
+
+    /**
      * @param  array  $data  lihat SchoolLearningAnalytics::load()
      */
     public function compute(array $data, ?string $school = null, ?string $grade = null, ?DateTimeImmutable $now = null): array
@@ -130,6 +141,9 @@ class SchoolLearningMetrics
         sort($schoolNames, SORT_NATURAL | SORT_FLAG_CASE);
         $schools = [];
         foreach ($schoolNames as $name) {
+            if (in_array($name, self::HIDDEN_FROM_COMPARISON, true)) {
+                continue;
+            }
             $schools[] = ['school' => $name] + $this->metrics($bySchool[$name] ?? []);
         }
 
