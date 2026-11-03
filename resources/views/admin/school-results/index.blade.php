@@ -109,6 +109,43 @@
                 </div>
             @endif
 
+            {{-- Uji statistik pretest-posttest --}}
+            @php $ps = $o['paired']; @endphp
+            <div class="{{ $card }}">
+                <h2 class="text-lg font-black">Uji statistik Pretest → Posttest {{ $selSchool ? '— ' . $selSchool : '(semua sekolah)' }}</h2>
+                @if ($ps['n'] < 2)
+                    <p class="mt-3 text-sm text-slate-500">Belum cukup siswa dengan pretest &amp; posttest lengkap untuk uji statistik (minimal 2).</p>
+                @else
+                    <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        <div>
+                            <p class="text-xs font-semibold uppercase text-slate-500">Paired-samples t-test</p>
+                            <p class="mt-1 text-xl font-black">t({{ $ps['df'] }}) = {{ $fmt($ps['t'], 3) }}</p>
+                            <p class="text-xs text-slate-500">p = {{ $ps['p'] < 0.0001 ? '< 0,0001' : $fmt($ps['p'], 4) }} · {{ $ps['sig'] ? 'signifikan (α=0,05)' : 'tidak signifikan' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold uppercase text-slate-500">Cohen's dz</p>
+                            <p class="mt-1 text-xl font-black">{{ $fmt($ps['cohens_dz'], 3) }}</p>
+                            <p class="text-xs text-slate-500">Ukuran efek: {{ $ps['cohens_dz_label'] }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold uppercase text-slate-500">Normalized Gain (⟨g⟩)</p>
+                            <p class="mt-1 text-xl font-black">{{ $fmt($ps['ngain'], 3) }}</p>
+                            <p class="text-xs text-slate-500">Kategori: {{ $ps['ngain_band'] }} ({{ $ps['ngain_n'] }} siswa dihitung)</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold uppercase text-slate-500">Rata-rata pre → post</p>
+                            <p class="mt-1 text-xl font-black">{{ $fmt($ps['mean_pre']) }} → {{ $fmt($ps['mean_post']) }}</p>
+                            <p class="text-xs text-slate-500">n = {{ $ps['n'] }} siswa berpasangan · selisih {{ $ps['mean_diff'] > 0 ? '+' : '' }}{{ $fmt($ps['mean_diff']) }} (SD {{ $fmt($ps['sd_diff']) }})</p>
+                        </div>
+                    </div>
+                    <p class="mt-4 text-xs text-slate-500">
+                        N-Gain (⟨g⟩, Hake) = rata-rata (post−pre)/(100−pre) per siswa, dikecualikan siswa dengan pretest 100.
+                        Kategori: &lt;0,3 Rendah · 0,3–0,7 Sedang · ≥0,7 Tinggi.
+                        Cohen's dz = rata-rata selisih / SD selisih (ukuran efek sampel berpasangan). p dua-sisi dari distribusi-t df=n−1.
+                    </p>
+                @endif
+            </div>
+
             {{-- Sekolah --}}
             <div class="{{ $card }}">
                 <h2 class="text-lg font-black">Perbandingan antar sekolah</h2>
@@ -161,6 +198,49 @@
                     </table>
                 </div>
                 <p class="mt-3 text-xs text-slate-500">L/R/W/S = rata-rata skor terbaru per keterampilan. Kolom “Naik” hanya dari siswa yang punya pretest dan posttest (n).</p>
+            </div>
+
+            {{-- Uji statistik per sekolah --}}
+            <div class="{{ $card }}">
+                <h2 class="text-lg font-black">Uji statistik Pretest → Posttest per sekolah</h2>
+                <div class="mt-4 overflow-x-auto">
+                    <table class="w-full min-w-[900px] text-left text-sm">
+                        <thead class="text-xs uppercase text-slate-500">
+                            <tr>
+                                <th class="py-2 pr-3">Sekolah</th>
+                                <th class="px-2">n</th>
+                                <th class="px-2">t(df)</th>
+                                <th class="px-2">p</th>
+                                <th class="px-2">Signifikan</th>
+                                <th class="px-2">Cohen's dz</th>
+                                <th class="px-2">Efek</th>
+                                <th class="px-2">N-Gain ⟨g⟩</th>
+                                <th class="px-2">Kategori</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-white/5">
+                            @foreach ($report['schools'] as $s)
+                                @php $sp = $s['paired']; @endphp
+                                <tr>
+                                    <td class="py-2 pr-3 font-bold">{{ $s['school'] }}</td>
+                                    @if ($sp['n'] < 2)
+                                        <td class="px-2 text-slate-400" colspan="8">n={{ $sp['n'] }} — belum cukup data berpasangan</td>
+                                    @else
+                                        <td class="px-2">{{ $sp['n'] }}</td>
+                                        <td class="px-2">{{ $fmt($sp['t'], 3) }}({{ $sp['df'] }})</td>
+                                        <td class="px-2">{{ $sp['p'] < 0.0001 ? '< 0,0001' : $fmt($sp['p'], 4) }}</td>
+                                        <td class="px-2 {{ $sp['sig'] ? 'font-bold text-green-600 dark:text-green-400' : 'text-slate-500' }}">{{ $sp['sig'] ? 'Ya' : 'Tidak' }}</td>
+                                        <td class="px-2">{{ $fmt($sp['cohens_dz'], 3) }}</td>
+                                        <td class="px-2">{{ $sp['cohens_dz_label'] }}</td>
+                                        <td class="px-2">{{ $fmt($sp['ngain'], 3) }}</td>
+                                        <td class="px-2">{{ $sp['ngain_band'] }}</td>
+                                    @endif
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-3 text-xs text-slate-500">n = jumlah siswa dengan pretest &amp; posttest lengkap di sekolah itu. p dua-sisi, α=0,05.</p>
             </div>
 
             <div class="grid gap-6 lg:grid-cols-2">
