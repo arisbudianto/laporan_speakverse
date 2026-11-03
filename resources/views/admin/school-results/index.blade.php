@@ -220,9 +220,13 @@
                 <div class="{{ $card }}">
                     <h2 class="text-lg font-black">Kelas di {{ $selSchool }}</h2>
                     <div class="mt-4 overflow-x-auto">
-                        <table class="w-full min-w-[700px] text-left text-sm">
+                        <table class="w-full min-w-[900px] text-left text-sm">
                             <thead class="text-xs uppercase text-slate-500">
-                                <tr><th class="py-2">Kelas</th><th>Siswa</th><th>Pre</th><th>Post</th><th>Progres</th><th>Intervensi</th><th></th></tr>
+                                <tr>
+                                    <th class="py-2">Kelas</th><th>Siswa</th><th>Pre</th><th>Post</th>
+                                    <th>L</th><th>R</th><th>W</th><th>S</th>
+                                    <th>Progres</th><th>Intervensi</th><th></th>
+                                </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 dark:divide-white/5">
                                 @foreach ($report['classes'] as $c)
@@ -231,6 +235,9 @@
                                         <td>{{ $c['n'] }}</td>
                                         <td>{{ $fmt($c['pre']) }}</td>
                                         <td>{{ $fmt($c['post']) }}</td>
+                                        @foreach (['listening', 'reading', 'writing', 'speaking'] as $k)
+                                            <td><span class="rounded-lg px-2 py-0.5 {{ $tone($c['skills'][$k]) }}">{{ $fmt($c['skills'][$k]) }}</span></td>
+                                        @endforeach
                                         <td>{{ $pct($c['progress_pct']) }}</td>
                                         <td class="{{ $c['intervention'] > 0 ? 'font-bold text-red-500' : '' }}">{{ $c['intervention'] }}</td>
                                         <td>
@@ -240,6 +247,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+                        <p class="mt-3 text-xs text-slate-500">L/R/W/S = rata-rata skor terbaru per keterampilan, sama seperti di tabel perbandingan sekolah.</p>
                     </div>
                 </div>
             @endif
