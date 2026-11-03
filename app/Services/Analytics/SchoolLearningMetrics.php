@@ -244,12 +244,14 @@ class SchoolLearningMetrics
             'completed_all' => 0, 'progress_pct' => null, 'completed_pct' => null,
             'started_pct' => null, 'active_pct' => null,
             'intervention' => 0, 'intervention_pct' => null, 'mahir_pct' => null,
+            'paired' => PairedSampleStats::compute([], []),
         ];
         if ($n === 0) {
             return $out;
         }
         $xp = 0;
         $pre = $post = $gain = [];
+        $pairedPre = $pairedPost = [];
         $skillVals = array_fill_keys(self::SKILLS, []);
         $prog = 0.0;
         foreach ($list as $p) {
@@ -268,6 +270,8 @@ class SchoolLearningMetrics
             }
             if ($p['gain'] !== null) {
                 $gain[] = $p['gain'];
+                $pairedPre[] = $p['pre'];
+                $pairedPost[] = $p['post'];
             }
             foreach (self::SKILLS as $sk) {
                 if ($p['skills'][$sk] !== null) {
@@ -281,6 +285,7 @@ class SchoolLearningMetrics
         $out['post'] = $avg($post);
         $out['gain'] = $avg($gain);
         $out['gain_n'] = count($gain);
+        $out['paired'] = PairedSampleStats::compute($pairedPre, $pairedPost);
         foreach (self::SKILLS as $sk) {
             $out['skills'][$sk] = $avg($skillVals[$sk]);
         }
